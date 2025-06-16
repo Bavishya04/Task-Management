@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Reflection Journal</title>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: linear-gradient(135deg, #f7b7a3, #f8e2b3);
+    }
+
+    .container {
+      display: flex;
+    }
+
+    .calendar-section, .entry-section {
+      width: 50%;
+      background: #ce987e;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-right: 20px;
+    }
+
+    .calendar-section:last-child {
+      margin-right: 0;
+    }
+
+    .entry-section textarea {
+      width: 100%;
+      height: 150px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+    }
+
+    .entry-section button {
+      margin: 10px 8px 0 0;
+      padding: 10px 18px;
+      font-size: 15px;
+      font-weight: bold;
+      background-color: #944f2d;
+      color: black;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      cursor: pointer;
+    }
+
+    .entry-section button:hover {
+      background-color: #b96a29;
+      transform: scale(1.05);
+    }
+
+    .popup {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #e9cdbf;
+      color: black;
+      padding: 10px 20px;
+      border-radius: 5px;
+      display: none;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .fc .fc-button {
+      background-color: #944f2d;
+      color: black;
+      border: none;
+      padding: 8px 14px;
+      font-size: 14px;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+    }
+
+    .fc .fc-button:hover {
+      background-color: #b96a29;
+    }
+
+    .fc .fc-button-primary:disabled {
+      background-color: #b6865e !important;
+      opacity: 0.6;
+    }
+
+    .fc-day-today {
+      background-color: white !important;
+      border: 2px solid #944f2d;
+    }
+
+    #entriesList {
+      margin-top: 20px;
+    }
+
+    .entryItem {
+      background-color: #a15a37;
+      color: black;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h2>Reflection Journal</h2>
+  <div class="container">
+    <div class="calendar-section">
+      <div id="calendar"></div>
+    </div>
+
+    <div class="entry-section">
+      <h3 id="dateHeading">Your reflection for the day</h3>
+      <textarea id="reflectionInput" placeholder="Write your thoughts here..." disabled></textarea>
+      <br>
+      <button onclick="saveEntry()">Save</button>
+      <button onclick="deleteEntry()">Delete</button>
+      <button onclick="downloadEntry()">Download</button>
+      <button onclick="viewAllEntries()">View All Entries</button>
+      <button onclick="printAllEntries()">Print All Entries</button>
+      <div id="entriesList"></div>
+    </div>
+  </div>
+
+  <div class="popup" id="popupMsg">Entry has been saved!</div>
+
+  <script>
+    const reflectionInput = document.getElementById('reflectionInput');
+    const dateHeading = document.getElementById('dateHeading');
+    const popupMsg = document.getElementById('popupMsg');
+    const entriesList = document.getElementById('entriesList');
+    const today = new Date(); // Use actual current date
+    let selectedDate = null;
+
+    function formatDate(date) {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      return date.toLocaleDateString(undefined, options);
+    }
+
+    function showPopup(message) {
+      popupMsg.textContent = message;
+      popupMsg.style.display = 'block';
+      setTimeout(() => {
+        popupMsg.style.display = 'none';
+      }, 2500);
+    }
+
+    function saveEntry() {
+      if (!selectedDate) return alert("Please select a valid date.");
+      const entry = reflectionInput.value;
+      localStorage.setItem(selectedDate.toISOString().split('T')[0], entry);
+      showPopup(`Entry for ${formatDate(selectedDate)} saved.`);
+    }
+
+    function deleteEntry() {
+      if (!selectedDate) return alert("Please select a valid date.");
+      localStorage.removeItem(selectedDate.toISOString().split('T')[0]);
+      reflectionInput.value = '';
+      showPopup(`Entry for ${formatDate(selectedDate)} deleted.`);
+    }
+
+    function downloadEntry() {
+      if (!selectedDate || !reflectionInput.value) return alert("Nothing to download.");
+      const blob = new Blob([reflectionInput.value], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.download = `${selectedDate.toISOString().split('T')[0]}.txt`;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+    }
+
+    function viewAllEntries() {
+      entriesList.innerHTML = '';
+      const keys = Object.keys(localStorage).sort();
+      if (keys.length === 0) {
+        entriesList.innerHTML = '<p>No entries found.</p>';
+        return;
+      }
+      keys.forEach(key => {
+        const entryText = localStorage.getItem(key);
+        const entryDiv = document.createElement('div');
+        entryDiv.className = 'entryItem';
+        entryDiv.innerHTML = `<strong>${key}</strong><br>${entryText}`;
+        entriesList.appendChild(entryDiv);
+      });
+    }
+
+    function printAllEntries() {
+      const keys = Object.keys(localStorage).sort();
+      if (keys.length === 0) {
+        alert("No entries to print.");
+        return;
+      }
+
+      let printableContent = '<h1>Reflection Journal Entries</h1>';
+      keys.forEach(key => {
+        const entryText = localStorage.getItem(key);
+        printableContent += `<h3>${key}</h3><p>${entryText.replace(/\n/g, '<br>')}</p><hr>`;
+      });
+
+      const printWindow = window.open('', '', 'width=800,height=600');
+      printWindow.document.write(`<html><head><title>Print Journal</title></head><body>${printableContent}</body></html>`);
+      printWindow.document.close();
+      printWindow.print();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        selectable: true,
+        dateClick: function(info) {
+          selectedDate = new Date(info.dateStr);
+          reflectionInput.disabled = false;
+          const saved = localStorage.getItem(info.dateStr) || '';
+          reflectionInput.value = saved;
+          dateHeading.textContent = `Reflection for ${formatDate(selectedDate)}`;
+        }
+      });
+      calendar.render();
+    });
+  </script>
+</body>
+</html>

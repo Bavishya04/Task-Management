@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>📝 My Notes App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #f7b7a3, #f8e2b3);
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #ce987e;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    h2, h3 {
+      text-align: center;
+      color: black;
+    }
+    h4 {
+      color: black;
+      margin-bottom: 5px;
+      margin-top: 15px;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    button {
+      background: #a7694a;
+      color: black;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #cf6d3c;
+    }
+
+    .note-title {
+      font-weight: bold;
+      margin-top: 15px;
+      cursor: pointer;
+      background: #a7694a;
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    .note-content {
+      display: none;
+      margin: 5px 10px 15px 0;
+      padding: 20px;
+      background: #a7694a;
+      border-left: 3px solid #a7694a;
+      border-radius: 6px;
+    }
+
+    .note-actions {
+      display: flex;
+      justify-content: flex-start;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .note-actions button {
+      width: auto;
+      margin: 0;
+      background-color: #7c462b;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>📝 My Notes</h2>
+
+  <h3>Add a New Note</h3>
+  <h4>Title</h4>
+  <input type="text" id="noteTitle" placeholder="Enter note title...">
+  <h4>Notes</h4>
+  <textarea id="noteContent" placeholder="Write your note here..." rows="4"></textarea>
+  <button onclick="saveNote()">Save Note</button>
+
+  <h3>Your Saved Notes</h3>
+  <div id="notes"></div>
+</div>
+
+<script>
+  function saveNote() {
+    const title = document.getElementById("noteTitle").value.trim();
+    const content = document.getElementById("noteContent").value.trim();
+
+    if (!title) {
+      alert("Please enter a title.");
+      return;
+    }
+
+    const notes = JSON.parse(localStorage.getItem("notes")) || [];
+    notes.push({ title, content });
+    localStorage.setItem("notes", JSON.stringify(notes));
+
+    document.getElementById("noteTitle").value = "";
+    document.getElementById("noteContent").value = "";
+
+    displayNotes();
+  }
+
+  function displayNotes() {
+    const notes = JSON.parse(localStorage.getItem("notes")) || [];
+    const notesContainer = document.getElementById("notes");
+    notesContainer.innerHTML = "";
+
+    notes.forEach((note, index) => {
+      const titleDiv = document.createElement("div");
+      titleDiv.className = "note-title";
+      titleDiv.textContent = note.title;
+      titleDiv.onclick = () => {
+        const contentDiv = document.getElementById("content-" + index);
+        contentDiv.style.display = contentDiv.style.display === "block" ? "none" : "block";
+      };
+
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "note-content";
+      contentDiv.id = "content-" + index;
+      contentDiv.innerHTML = `<pre>${note.content}</pre>
+        <div class="note-actions">
+          <button onclick="deleteNote(${index})">Delete</button>
+          <button onclick="printNote(\`${note.title}\`, \`${note.content}\`)">Print</button>
+          <button onclick="downloadNote(\`${note.title}\`, \`${note.content}\`)">Download</button>
+        </div>`;
+
+      notesContainer.appendChild(titleDiv);
+      notesContainer.appendChild(contentDiv);
+    });
+  }
+
+  function deleteNote(index) {
+    const notes = JSON.parse(localStorage.getItem("notes")) || [];
+    notes.splice(index, 1);
+    localStorage.setItem("notes", JSON.stringify(notes));
+    displayNotes();
+  }
+
+  function printNote(title, content) {
+    const newWin = window.open("", "", "width=600,height=600");
+    newWin.document.write(`<h3>${title}</h3><pre>${content}</pre>`);
+    newWin.print();
+    newWin.close();
+  }
+
+  function downloadNote(title, content) {
+    const blob = new Blob([title + "\n\n" + content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  window.onload = displayNotes;
+</script>
+
+</body>
+</html>

@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weekly Planner</title>
+  <link rel="icon" href="images/planova.png" type="image/png">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f7b7a3, #f8e2b3);
+      margin: 0;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      color: black;
+      margin-bottom: 30px;
+    }
+
+    .week {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 30px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .week-second-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 40px;
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+      margin-top: 20px;
+      
+      margin-right: 3.5em;
+    }
+
+    .day {
+      background-color:  #ce987e;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .day h2 {
+      color: black;
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+    }
+
+    .task-input {
+      display: flex;
+      margin-bottom: 10px;
+      
+    }
+
+    .task-input input {
+      flex: 1;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      margin-right: 8px;
+    }
+
+    .task-input button {
+      padding: 8px 10px;
+      background-color:  #ad7052;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    li input[type="checkbox"] {
+      margin-right: 8px;
+      accent-color:  #ce987e;
+    }
+
+    .end-btn {
+      margin-top: 15px;
+      background-color:  #ad7052;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color:  #ce987e;
+      color: #fff;
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 10;
+    }
+
+    .blur-background {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(5px);
+      z-index: 5;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Weekly Planner</h1>
+
+<div class="week" id="weekContainer">
+  <div class="day" id="day-0">
+    <h2>Monday</h2>
+    <div class="task-input">
+      <input type="text" placeholder="Add task" id="input-0">
+      <button onclick="addTask(0)">+</button>
+    </div>
+    <ul id="list-0"></ul>
+    <button class="end-btn" onclick="endOfDay(0)">End Monday</button>
+  </div>
+
+  <div class="day" id="day-1">
+    <h2>Tuesday</h2>
+    <div class="task-input">
+      <input type="text" placeholder="Add task" id="input-1">
+      <button onclick="addTask(1)">+</button>
+    </div>
+    <ul id="list-1"></ul>
+    <button class="end-btn" onclick="endOfDay(1)">End Tuesday</button>
+  </div>
+
+  <div class="day" id="day-2">
+    <h2>Wednesday</h2>
+    <div class="task-input">
+      <input type="text" placeholder="Add task" id="input-2">
+      <button onclick="addTask(2)">+</button>
+    </div>
+    <ul id="list-2"></ul>
+    <button class="end-btn" onclick="endOfDay(2)">End Wednesday</button>
+  </div>
+
+  <div class="day" id="day-3">
+    <h2>Thursday</h2>
+    <div class="task-input">
+      <input type="text" placeholder="Add task" id="input-3">
+      <button onclick="addTask(3)">+</button>
+    </div>
+    <ul id="list-3"></ul>
+    <button class="end-btn" onclick="endOfDay(3)">End Thursday</button>
+  </div>
+</div>
+
+<div class="week-second-row" id="weekSecondRow">
+  <div class="day" id="day-4">
+    <h2>Friday</h2>
+    <div class="task-input">
+      <input type="text" placeholder="Add task" id="input-4">
+      <button onclick="addTask(4)">+</button>
+    </div>
+    <ul id="list-4"></ul>
+    <button class="end-btn" onclick="endOfDay(4)">End Friday</button>
+  </div>
+
+  <div class="day" id="day-5">
+    <h2>Saturday</h2>
+    <div class="task-input">
+      <input type="text" placeholder="Add task" id="input-5">
+      <button onclick="addTask(5)">+</button>
+    </div>
+    <ul id="list-5"></ul>
+    <button class="end-btn" onclick="endOfDay(5)">End Saturday</button>
+  </div>
+
+  <div class="day" id="day-6">
+    <h2>Sunday</h2>
+    <div class="task-input">
+      <input type="text" placeholder="Add task" id="input-6">
+      <button onclick="addTask(6)">+</button>
+    </div>
+    <ul id="list-6"></ul>
+    <button class="end-btn" onclick="endOfDay(6)">End Sunday</button>
+  </div>
+</div>
+
+<div class="blur-background" id="blurBg"></div>
+<div id="popup" class="popup"></div>
+
+<script>
+  const tasksByDay = {};
+
+  
+  for (let i = 0; i < 7; i++) {
+    tasksByDay[i] = [];
+  }
+
+  function addTask(dayIndex) {
+    const input = document.getElementById(`input-${dayIndex}`);
+    const text = input.value.trim();
+    if (text !== "") {
+      const ul = document.getElementById(`list-${dayIndex}`);
+      const li = document.createElement("li");
+      li.innerHTML = `<input type="checkbox"> <span>${text}</span>`;
+      ul.appendChild(li);
+      tasksByDay[dayIndex].push({ text, completed: false });
+      input.value = "";
+    }
+  }
+
+  function endOfDay(dayIndex) {
+    const list = document.getElementById(`list-${dayIndex}`);
+    const items = list.querySelectorAll("li");
+    let incompleteTasks = [];
+
+    items.forEach(item => {
+      const checkbox = item.querySelector("input[type='checkbox']");
+      const taskText = item.querySelector("span").textContent;
+      if (!checkbox.checked) {
+        incompleteTasks.push(taskText);
+      }
+    });
+
+    if (incompleteTasks.length === 0) {
+      showPopup(`🎉 You completed all tasks for ${["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][dayIndex]}!`);
+    } else {
+      const message = `⚠️ ${incompleteTasks.length} task${incompleteTasks.length > 1 ? "s" : ""} left! Carrying to next day.`;
+      showPopup(message);
+      const nextDayIndex = (dayIndex + 1) % 7;
+      const nextList = document.getElementById(`list-${nextDayIndex}`);
+      incompleteTasks.forEach(task => {
+        const li = document.createElement("li");
+        li.innerHTML = `<input type="checkbox"> <span>${task}</span>`;
+        nextList.appendChild(li);
+        tasksByDay[nextDayIndex].push({ text: task, completed: false });
+      });
+    }
+
+    list.innerHTML = ""; // Clear today
+  }
+
+  function showPopup(message) {
+    const popup = document.getElementById("popup");
+    const blurBg = document.getElementById("blurBg");
+    popup.textContent = message;
+    popup.style.display = "block";
+    blurBg.style.display = "block";
+
+    setTimeout(() => {
+      popup.style.display = "none";
+      blurBg.style.display = "none";
+    }, 1500);
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Calorie Tracker</title>
+  <link rel="icon" href="images/planova.png" type="image/png">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f7b7a3, #f8e2b3);
+      color: black;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2, h3 {
+      color: black;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card {
+      background-color: #a15a37;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+    }
+
+    .log {
+      background-color: #a15a37;
+      border-left: 5px solid #af754f;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #793717;
+      color: black;
+      cursor: pointer;
+      border: none;
+      font-weight: bold;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #864423;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .unit-info {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 10px;
+    }
+
+    .net-summary {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-top: 10px;
+      color: black;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔥 Smart Calorie Tracker</h2>
+
+    <div class="card">
+      <h3>Step 1: Basic Info</h3>
+      <label>Enter Your Weight (kg):</label>
+      <input type="number" id="weight" placeholder="e.g. 60" />
+
+      <label>Preferred Food Type:</label>
+      <select id="foodType">
+        <option value="vegetarian">Vegetarian</option>
+        <option value="non-vegetarian">Non-Vegetarian</option>
+        <option value="vegan">Vegan</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <h3>🍽️ Plan Today's Meals</h3>
+      <label>Breakfast:</label>
+      <input type="text" id="breakfast" placeholder="e.g. Idli + Sambar" />
+
+      <label>Lunch:</label>
+      <input type="text" id="lunch" placeholder="e.g. Rice + Dal + Veggies" />
+
+      <label>Dinner:</label>
+      <input type="text" id="dinner" placeholder="e.g. Chapati + Curry" />
+
+      <button class="btn-primary" onclick="logMeals()">Track Meals</button>
+      <div id="mealLog"></div>
+    </div>
+
+    <div class="card">
+      <h3>🏋️ Add Workout</h3>
+      <label>Workout Type:</label>
+      <select id="workoutType">
+        <option value="light">Light (e.g., Walking, Yoga)</option>
+        <option value="moderate">Moderate (e.g., Jogging, Dance)</option>
+        <option value="intense">Intense (e.g., Gym, Running)</option>
+      </select>
+
+      <label>Duration (minutes):</label>
+      <input type="number" id="duration" placeholder="e.g. 30" />
+
+      <button class="btn-primary" onclick="logWorkout()">Add Workout</button>
+     
+      <div id="workoutLog"></div>
+    </div>
+
+    <div class="card">
+      <h3>📊 Net Calories Summary</h3>
+      <div class="net-summary" id="netSummary">Track meals and workouts to see your summary!</div>
+    </div>
+  </div>
+
+  <script>
+    let totalCaloriesIn = 0;
+    let totalCaloriesOut = 0;
+
+    function estimateCalories(food, type) {
+      const base = {
+        vegetarian: 400,
+        "non-vegetarian": 500,
+        vegan: 350
+      };
+      return base[type] + (food.length * 5);
+    }
+
+    function updateNetCalories(weight) {
+      const recommended = weight * 26.5;
+      const net = totalCaloriesIn - totalCaloriesOut;
+
+      let status = "";
+      if (net < recommended - 100) {
+        status = "⚠️ Your net intake is below the recommended amount.";
+      } else if (net > recommended + 100) {
+        status = "⚠️ You’ve exceeded your recommended intake.";
+      } else {
+        status = "✅ You're within a healthy calorie range.";
+      }
+
+      document.getElementById("netSummary").innerHTML = `
+        Calories In: ${totalCaloriesIn.toFixed(0)} kcal<br>
+        Calories Burned: ${totalCaloriesOut.toFixed(0)} kcal<br>
+        <strong>Net Calories:</strong> ${net.toFixed(0)} kcal<br>
+        <strong>Recommended:</strong> ~${recommended.toFixed(0)} kcal<br>
+        ${status}
+      `;
+    }
+
+    function logMeals() {
+      const weight = parseFloat(document.getElementById("weight").value);
+      const type = document.getElementById("foodType").value;
+      const breakfast = document.getElementById("breakfast").value;
+      const lunch = document.getElementById("lunch").value;
+      const dinner = document.getElementById("dinner").value;
+
+      if (!weight || !breakfast || !lunch || !dinner) {
+        alert("Please fill all fields!");
+        return;
+      }
+
+      const cal1 = estimateCalories(breakfast, type);
+      const cal2 = estimateCalories(lunch, type);
+      const cal3 = estimateCalories(dinner, type);
+      const total = cal1 + cal2 + cal3;
+      totalCaloriesIn += total;
+
+      const log = document.createElement("div");
+      log.className = "log";
+      log.innerHTML = `
+        <strong>Food Type:</strong> ${type}<br>
+        <strong>Breakfast:</strong> ${breakfast} - ~${cal1} kcal<br>
+        <strong>Lunch:</strong> ${lunch} - ~${cal2} kcal<br>
+        <strong>Dinner:</strong> ${dinner} - ~${cal3} kcal<br>
+        <strong>Total Meal Calories:</strong> ${total} kcal
+      `;
+      document.getElementById("mealLog").prepend(log);
+
+      updateNetCalories(weight);
+
+      document.getElementById("breakfast").value = "";
+      document.getElementById("lunch").value = "";
+      document.getElementById("dinner").value = "";
+    }
+
+    function logWorkout() {
+      const weight = parseFloat(document.getElementById("weight").value);
+      const type = document.getElementById("workoutType").value;
+      const duration = parseFloat(document.getElementById("duration").value); 
+
+      if (!weight || weight <= 0 || !duration || duration <= 0) {
+        alert("Please enter valid weight and duration!");
+        return;
+      }
+
+      let MET = 0;
+      if (type === "light") MET = 3;
+      else if (type === "moderate") MET = 5;
+      else if (type === "intense") MET = 8;
+
+      const durationHours = duration / 60;
+      const caloriesBurned = MET * weight * durationHours;
+      totalCaloriesOut += caloriesBurned;
+
+      const log = document.createElement("div");
+      log.className = "log";
+      log.innerHTML = `
+        <strong>Workout Type:</strong> ${type}<br>
+        <strong>Duration:</strong> ${duration} mins<br>
+        <strong>Calories Burned:</strong> ~${caloriesBurned.toFixed(2)} kcal
+      `;
+
+      document.getElementById("workoutLog").prepend(log);
+
+      updateNetCalories(weight);
+
+      document.getElementById("duration").value = "";
+    }
+  </script>
+</body>
+</html>

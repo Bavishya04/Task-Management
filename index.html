@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Life Organizer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #f7b7a3, #f8e2b3);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      transition: filter 0.3s ease;
+    }
+
+    .blurred {
+      filter: blur(4px);
+    }
+
+    .sidebar-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 28px;
+      color: #8e5a3f;
+      cursor: pointer;
+      z-index: 1001;
+      background: #f8e2b3;
+      padding: 5px 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    }
+    .sidebar {
+  position: fixed;
+  top: 0;
+  left: -260px;
+  height: 100%;
+  width: 260px;
+  background: #f8e2b3;
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+  padding: 60px 0 20px; /* Top padding for logo space, bottom padding to avoid cutting off last item */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Make sure items start at the top */
+  gap: 10px; /* Add spacing between links */
+  transition: 0.3s ease;
+  z-index: 1000;
+}
+
+
+    .sidebar a {
+      padding: 18px 30px;
+      text-decoration: none;
+      color: #8e5a3f;
+      font-size: 18px;
+      margin: 8px 15px;
+      border-radius: 10px;
+      transition: 0.2s ease-in-out;
+    }
+
+    .sidebar a:hover {
+      background: #ce987e;
+      color: white;
+      transform: translateX(5px);
+    }
+
+    .content {
+      padding: 100px 40px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: 0.3s ease;
+    }
+
+    h1 {
+      font-size: 42px;
+      color: #222;
+      margin-bottom: 20px;
+    }
+
+    p.description {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 50px;
+      max-width: 700px;
+      text-align: center;
+      padding: 0 15px;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin-bottom: 60px;
+    }
+
+    .box {
+      background: #ce987e;
+      border: 2px solid #8e5a3f;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+      width: 270px;
+      text-align: center;
+      transition: 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .box img {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      mix-blend-mode: multiply;
+    }
+
+    .box h3 {
+      font-size: 24px;
+      color: #222;
+      margin-bottom: 10px;
+    }
+
+    .box p {
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 15px;
+    }
+
+    .box button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #8e5a3f;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .box button:hover {
+      background-color: #5a3e2f;
+    }
+
+    .box:hover {
+      transform: scale(1.05);
+      cursor: grab;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar toggle -->
+  <div class="sidebar-toggle" onclick="toggleSidebar()">☰</div>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar">
+    <a href="index.html" onclick="closeSidebar()">🏠 Home</a>
+    <a href="weekly.html" onclick="closeSidebar()">🗓️ Weekly Planner</a>
+    <a href="notes.html" onclick="closeSidebar()">📝 Notes Taking</a>
+    <a href="study.html" onclick="closeSidebar()">🗓️ Study Planner</a>
+    <a href="calorie.html" onclick="closeSidebar()">🔥 Calorie Tracker</a>
+   
+  </div>
+
+  <!-- Main Content -->
+  <div id="mainContent" class="content">
+    <h1>Life Organizer</h1>
+    <p class="description">Your central hub to manage tasks, jot down thoughts, and keep track of your finances. Stay organized and focused.</p>
+
+    <div class="container">
+      <div class="box">
+        <img src="do.png" alt="To-Do Icon">
+        <h3>To-Do List</h3>
+        <p>Manage your tasks efficiently</p>
+        <a href="todo.html"><button>Open</button></a>
+      </div>
+      <div class="box">
+        <img src="diary.png" alt="Diary Icon">
+        <h3>Personal Diary</h3>
+        <p>Record your thoughts and memories</p>
+        <a href="personal.html"><button>Open</button></a>
+      </div>
+      <div class="box">
+        <img src="bud.png" alt="Budget Icon">
+        <h3>Budget Planner</h3>
+        <p>Track your income and expenses</p>
+        <a href="budget.html"><button>Open</button></a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const sidebar = document.getElementById("sidebar");
+    const mainContent = document.getElementById("mainContent");
+
+    function toggleSidebar() {
+      if (sidebar.style.left === "0px") {
+        sidebar.style.left = "-260px";
+        mainContent.classList.remove("blurred");
+      } else {
+        sidebar.style.left = "0px";
+        mainContent.classList.add("blurred");
+      }
+    }
+
+    function closeSidebar() {
+      sidebar.style.left = "-260px";
+      mainContent.classList.remove("blurred");
+    }
+  </script>
+</body>
+</html>

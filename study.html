@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Study Planning Section</title>
+  <link rel="icon" href="images/planova.png" type="image/png" />
+  <style>
+    /* ... styles remain same as before ... */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f7b7a3, #f8e2b3);
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      color: black;
+      margin-bottom: 5px;
+    }
+
+    .card {
+      background: #ce987e;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      margin: 20px auto;
+      max-width: 600px;
+    }
+
+    input, button, textarea {
+      padding: 10px;
+      margin-top: 5px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .input-row > div {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .study-task {
+      background: #9b6449;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .study-task button {
+      background: #ce774b;
+      color: black;
+      border: none;
+      border-radius: 8px;
+      padding: 5px 10px;
+      cursor: pointer;
+      margin-left: 5px;
+    }
+
+    .study-task button:hover {
+      background: #ce987e;
+    }
+
+    .unit-info {
+      text-align: right;
+      font-size: 14px;
+      color: #475569;
+      margin-top: 10px;
+    }
+
+    .timer {
+      font-size: 14px;
+      color: #f1ae86;
+      font-weight: bold;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 400px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      animation: popIn 0.4s ease;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-box h3 {
+      background: #9b6449;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      color: white;
+    }
+
+    .modal-box .checkmark {
+      font-size: 40px;
+      background: #9b6449;
+      color: white;
+      border-radius: 50%;
+      padding: 10px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2 style="text-align: center;">📚 Study Planning Section</h2>
+
+  <div class="card">
+    <h3 style="text-align:center; color:white;">Add New Study Task</h3>
+    <div class="input-row">
+      <div>
+        <label for="subjectInput"><h2>Title</h2></label>
+        <input type="text" id="subjectInput" placeholder="e.g. Math - Algebra" />
+      </div>
+      <div>
+        <label for="timeInput"><h2>Set Time (mins)</h2></label>
+        <input type="number" id="timeInput" placeholder="e.g. 60" min="10" step="5" />
+      </div>
+    </div>
+    <button class="btn-primary" onclick="addStudyTask()">Add Study Task</button>
+  </div>
+
+  <div class="card">
+    <h3>Your Study Plan 🗓️</h3>
+    <div id="studyList"></div>
+  </div>
+
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal-box">
+      <div class="checkmark">✔</div>
+      <h3 id="modalText">Task Completed!</h3>
+    </div>
+  </div>
+
+  <script>
+    let timers = {}; // to store timer state for each task
+
+    window.onload = function () {
+      displayStudyTasks();
+    };
+
+    function addStudyTask() {
+      const subjectInput = document.getElementById("subjectInput").value;
+      const timeInput = document.getElementById("timeInput").value;
+
+      if (!subjectInput.trim() || !timeInput) {
+        alert("Please enter both subject and time!");
+        return;
+      }
+
+      let studyTasks = JSON.parse(localStorage.getItem("studyTasks")) || [];
+      studyTasks.push({ subject: subjectInput, time: parseInt(timeInput), completed: false });
+      localStorage.setItem("studyTasks", JSON.stringify(studyTasks));
+
+      document.getElementById("subjectInput").value = "";
+      document.getElementById("timeInput").value = "";
+
+      displayStudyTasks();
+    }
+
+    function displayStudyTasks() {
+      const studyTasks = JSON.parse(localStorage.getItem("studyTasks")) || [];
+      const studyList = document.getElementById("studyList");
+      studyList.innerHTML = "";
+
+      studyTasks.forEach((task, index) => {
+        const taskDiv = document.createElement("div");
+        taskDiv.className = "study-task";
+        taskDiv.innerHTML = `
+          <div>
+            <strong>${task.subject}</strong> - ${task.time} minutes
+            <div id="timer-${index}" class="timer">Time Left: ${task.time} minutes</div>
+          </div>
+          <div>
+            <button onclick="startTimer(${index}, this)">Start</button>
+            <button onclick="pauseTimer(${index}, this)">Pause</button>
+            <button onclick="deleteTask(${index})">Delete</button>
+          </div>
+        `;
+        studyList.appendChild(taskDiv);
+
+        // Initialize timer state
+        if (!timers[index]) {
+          timers[index] = {
+            timeLeft: task.time * 60,
+            interval: null,
+            paused: false
+          };
+        }
+      });
+    }
+
+    function startTimer(index, startBtn) {
+      const timerObj = timers[index];
+      const timerElement = document.getElementById(`timer-${index}`);
+      let studyTasks = JSON.parse(localStorage.getItem("studyTasks")) || [];
+      let task = studyTasks[index];
+
+      if (task.completed || timerObj.interval) return;
+
+      startBtn.disabled = true;
+
+      timerObj.interval = setInterval(() => {
+        if (!timerObj.paused) {
+          timerObj.timeLeft--;
+          let minutes = Math.floor(timerObj.timeLeft / 60);
+          let seconds = timerObj.timeLeft % 60;
+          timerElement.textContent = `Time Left: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+
+          if (timerObj.timeLeft <= 0) {
+            clearInterval(timerObj.interval);
+            task.completed = true;
+            localStorage.setItem("studyTasks", JSON.stringify(studyTasks));
+            showPopup(`🎉 Time's up for "${task.subject}"! Well done!`);
+            displayStudyTasks();
+          }
+        }
+      }, 1000);
+    }
+
+    function pauseTimer(index, pauseBtn) {
+      const timerObj = timers[index];
+      if (timerObj.interval) {
+        timerObj.paused = !timerObj.paused;
+        pauseBtn.textContent = timerObj.paused ? "Resume" : "Pause";
+      }
+    }
+
+    function deleteTask(index) {
+      let studyTasks = JSON.parse(localStorage.getItem("studyTasks")) || [];
+      studyTasks.splice(index, 1);
+      localStorage.setItem("studyTasks", JSON.stringify(studyTasks));
+
+      // Stop and remove the timer
+      if (timers[index]?.interval) clearInterval(timers[index].interval);
+      delete timers[index];
+
+      displayStudyTasks();
+    }
+
+    function showPopup(message) {
+      const modalOverlay = document.getElementById("modalOverlay");
+      const modalText = document.getElementById("modalText");
+
+      modalText.textContent = message;
+      modalOverlay.style.display = "flex";
+
+      setTimeout(() => {
+        modalOverlay.style.display = "none";
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

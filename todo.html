@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Taskspark</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #f7b7a3, #f8e2b3);
+      margin: 0;
+      padding: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .container {
+      background: #ce987e;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      width: 600px;
+    }
+
+    h2 {
+      text-align: center;
+      color: black;
+      font-size: 28px;
+      margin-bottom: 25px;
+    }
+
+    .task-form input, .task-form textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 12px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    .task-form button {
+      width: 100%;
+      padding: 12px;
+      background-color: #b3653f;
+      color: white;
+      font-size: 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .task-form button:hover {
+      background-color: #be7754;
+    }
+
+    .task-list {
+      margin-top: 20px;
+    }
+
+    .task {
+      background: #ce987e;
+      border: 2px solid #8e5a3f;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+      width: 90%;
+      max-width: 600px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: 0.3s;
+    }
+
+    .task input[type="checkbox"] {
+      margin-right: 10px;
+      transform: scale(1.2);
+    }
+
+    .task-info {
+      flex: 1;
+    }
+
+    .completed {
+      text-decoration: line-through;
+      color: gray;
+    }
+
+    .delete-btn, .edit-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      margin-left: 10px;
+      color: black;
+    }
+
+    .delete-btn:hover, .edit-btn:hover {
+      color: #fff;
+    }
+
+    .popup {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: #ce987e;
+      color: black;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      display: none;
+      z-index: 100;
+      animation: fadeInOut 2s ease-in-out;
+    }
+
+    .popup.delete {
+      background-color: #ce987e;
+    }
+
+    .edit-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: none;
+      z-index: 1000;
+      width: 300px;
+    }
+
+    .edit-popup input,
+    .edit-popup textarea {
+      width: 100%;
+      margin: 10px 0;
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    .edit-popup button {
+      margin-top: 10px;
+      padding: 10px;
+      width: 48%;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .save-btn {
+      background-color: #b3653f;
+      color: white;
+    }
+
+    .cancel-btn {
+      background-color: #ccc;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(20px); }
+      10% { opacity: 1; transform: translateY(0); }
+      90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(20px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Taskspark</h2>
+    <div class="popup" id="popup"></div>
+
+    <div class="task-form">
+      <h4>Title:</h4>
+      <input type="text" id="title" placeholder="Enter task title...">
+      <h4>Description:</h4>
+      <textarea id="description" rows="3" placeholder="Enter task description... (Optional)"></textarea>
+      <button onclick="addTask()">+ Add Task</button>
+    </div>
+    
+    <div class="task-list" id="taskList">
+      <h3>Your Tasks</h3>
+    </div>
+  </div>
+
+  <!-- Edit Popup -->
+  <div class="edit-popup" id="editPopup">
+    <h4>Edit Task</h4>
+    <input type="text" id="editTitle" placeholder="Edit title">
+    <textarea id="editDescription" rows="3" placeholder="Edit description"></textarea>
+    <div style="display: flex; justify-content: space-between;">
+      <button class="save-btn" onclick="saveChanges()">Save Changes</button>
+      <button class="cancel-btn" onclick="closeEditPopup()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    let taskBeingEdited = null;
+
+    function showPopup(message, isDelete = false) {
+      const popup = document.getElementById('popup');
+      popup.textContent = message;
+      popup.className = isDelete ? 'popup delete' : 'popup';
+      popup.style.display = 'block';
+      setTimeout(() => {
+        popup.style.display = 'none';
+      }, 2000);
+    }
+
+    function addTask() {
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const taskList = document.getElementById('taskList');
+
+      if (title === '') return;
+
+      const task = document.createElement('div');
+      task.className = 'task';
+
+      task.innerHTML = `
+        <label class="task-info">
+          <input type="checkbox" onchange="markCompleted(this)">
+          <strong>${title}</strong><br>
+          <small>${description}</small>
+        </label>
+        <div>
+          <button class="edit-btn" onclick="editTask(this)">🖉</button>
+          <button class="delete-btn" onclick="deleteTask(this)">🗄</button>
+        </div>
+      `;
+
+      taskList.appendChild(task);
+      document.getElementById('title').value = '';
+      document.getElementById('description').value = '';
+
+      showPopup("Task has been added");
+    }
+
+    function markCompleted(checkbox) {
+      const taskInfo = checkbox.closest('.task').querySelector('.task-info');
+      if (checkbox.checked) {
+        taskInfo.classList.add('completed');
+      } else {
+        taskInfo.classList.remove('completed');
+      }
+    }
+
+    function deleteTask(button) {
+      const task = button.closest('.task');
+      task.remove();
+      showPopup("Task has been deleted", true);
+    }
+
+    function editTask(button) {
+      taskBeingEdited = button.closest('.task');
+      const titleText = taskBeingEdited.querySelector('strong').textContent;
+      const descText = taskBeingEdited.querySelector('small').textContent;
+
+      document.getElementById('editTitle').value = titleText;
+      document.getElementById('editDescription').value = descText;
+
+      document.getElementById('editPopup').style.display = 'block';
+    }
+
+    function saveChanges() {
+      if (!taskBeingEdited) return;
+
+      const newTitle = document.getElementById('editTitle').value.trim();
+      const newDesc = document.getElementById('editDescription').value.trim();
+
+      taskBeingEdited.querySelector('strong').textContent = newTitle;
+      taskBeingEdited.querySelector('small').textContent = newDesc;
+
+      document.getElementById('editPopup').style.display = 'none';
+      showPopup("Task has been updated");
+    }
+
+    function closeEditPopup() {
+      document.getElementById('editPopup').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

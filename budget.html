@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BudgetWise</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: linear-gradient(135deg, #f7b7a3, #f8e2b3);
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #f0b293;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .summary {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .card {
+      padding: 15px;
+      border-radius: 12px;
+      width: 30%;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      font-weight: bold;
+    }
+    .income {
+      background-color: #d4edda;
+      color: #2e7d32;
+    }
+    .expense {
+      background-color: #f8d7da;
+      color: #c62828;
+    }
+    .remaining {
+      background-color: #dbe9f6;
+      color: #1565c0;
+    }
+
+    .form-section {
+      background-color: #b37454;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 15px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: #eee;
+      padding: 10px 15px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .radio-option input[type="radio"] {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #999;
+      border-radius: 50%;
+      outline: none;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .radio-option input[type="radio"]:checked::before {
+      content: "";
+      display: block;
+      width: 10px;
+      height: 10px;
+      background-color: currentColor;
+      border-radius: 50%;
+      position: absolute;
+      top: 4px;
+      left: 4px;
+    }
+
+    .income-radio input[type="radio"] {
+      border-color: black;
+      color: black;
+    }
+
+    .expense-radio input[type="radio"] {
+      border-color: black;
+      color:black;
+    }
+
+    input, select {
+      margin: 5px 0;
+      padding: 10px;
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #ebb89f;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      background-color: #a35832;
+      color: black;
+      font-size: 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #a65c3c;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #ce987e;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    .green {
+      color: green;
+    }
+    .red {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>BudgetWise</h1>
+    <p>Your simple personal budget planner.</p>
+
+    <div class="summary">
+      <div class="card income">Total Income<br><span id="totalIncome">$0.00</span></div>
+      <div class="card expense">Total Expenses<br><span id="totalExpense">$0.00</span></div>
+      <div class="card remaining">Remaining Budget<br><span id="remaining">$0.00</span></div>
+    </div>
+
+    <div class="form-section">
+      <h3>Add New Transaction</h3>
+      <div class="radio-group">
+        <label class="radio-option income-radio">
+          <input type="radio" name="type" value="income" checked />
+          Income
+        </label>
+        <label class="radio-option expense-radio">
+          <input type="radio" name="type" value="expense" />
+          Expense
+        </label>
+      </div>
+
+      <input type="text" id="description" placeholder="Description (e.g., Salary, Groceries)" />
+      <input type="number" id="amount" placeholder="Amount ($)" min="0.01" step="0.01" />
+      <select id="category">
+        <option value="">Select a category</option>
+        <option value="Salary">Salary</option>
+        <option value="Groceries">Groceries</option>
+        <option value="Transportation">Transportation</option>
+        <option value="Housing">Housing</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Others">Others</option>
+      </select><br><br>
+      <button onclick="addTransaction()">Add Transaction</button>
+
+      <h3 style="margin-top: 25px;">Transaction History</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="transactionList"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let income = 0;
+    let expense = 0;
+
+    function addTransaction() {
+      const type = document.querySelector('input[name="type"]:checked').value;
+      const desc = document.getElementById("description").value.trim();
+      const amt = parseFloat(document.getElementById("amount").value);
+      const cat = document.getElementById("category").value;
+
+      if (!desc || isNaN(amt) || amt <= 0 || !cat) {
+        alert("Please fill all fields correctly.");
+        return;
+      }
+
+      const date = new Date().toLocaleDateString("en-US", {
+        year: "numeric", month: "short", day: "numeric"
+      });
+
+      const tbody = document.getElementById("transactionList");
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${type === "income" ? "💵 Income" : "🧾 Expense"}</td>
+
+        <td>${desc}</td>
+        <td>${cat}</td>
+        <td>${date}</td>
+        <td class="${type === "income" ? "green" : "red"}">
+          ${type === "income" ? "+" : "-"}$${amt.toFixed(2)}
+        </td>
+        <td><button onclick="deleteTransaction(this, '${type}', ${amt})">🧹</button></td>
+      `;
+      tbody.appendChild(tr);
+
+      if (type === "income") {
+        income += amt;
+      } else {
+        expense += amt;
+      }
+
+      updateSummary();
+      resetForm();
+    }
+
+    function deleteTransaction(btn, type, amt) {
+      btn.closest("tr").remove();
+      if (type === "income") {
+        income -= amt;
+      } else {
+        expense -= amt;
+      }
+      updateSummary();
+    }
+
+    function updateSummary() {
+      document.getElementById("totalIncome").textContent = `$${income.toFixed(2)}`;
+      document.getElementById("totalExpense").textContent = `$${expense.toFixed(2)}`;
+      document.getElementById("remaining").textContent = `$${(income - expense).toFixed(2)}`;
+    }
+
+    function resetForm() {
+      document.getElementById("description").value = "";
+      document.getElementById("amount").value = "";
+      document.getElementById("category").value = "";
+      document.querySelector('input[value="income"]').checked = true;
+    }
+  </script>
+</body>
+</html>
